@@ -1,10 +1,10 @@
 const CACHE_NAME = 'click-game-v1';
 const urlsToCache = [
-    './',
-    './index.html',
-    './main.js',
-    './button.png',
-    './manifest.json'
+    '/pwatest/',
+    '/pwatest/index.html',
+    '/pwatest/main.js',
+    '/pwatest/button.png',
+    '/pwatest/manifest.json'
 ];
 
 // ServiceWorker 설치 시 캐시에 파일들을 저장

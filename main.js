@@ -385,17 +385,91 @@ class PWAInstaller {
         // PWA 설치 조건이 충족되면 설치 버튼 표시
         if (isPWAReady && hasManifest && hasServiceWorker) {
             console.log('🎉 PWA 설치 조건 충족!');
-            // beforeinstallprompt 이벤트가 발생하지 않았을 때도 버튼 표시
-            if (!this.deferredPrompt) {
+
+            // HTTPS 환경에서는 더 적극적으로 설치 버튼 표시
+            if (isHTTPS) {
+                console.log('🚀 HTTPS 환경 - PWA 설치 버튼 표시!');
                 setTimeout(() => {
                     this.showInstallButton();
                 }, 1000);
+            } else if (isLocalhost) {
+                // 로컬호스트에서는 beforeinstallprompt 이벤트가 발생하지 않았을 때만 표시
+                if (!this.deferredPrompt) {
+                    setTimeout(() => {
+                        this.showInstallButton();
+                    }, 1000);
+                }
             }
         } else {
             console.log('❌ PWA 설치 조건 미충족:');
             if (!isPWAReady) console.log('- HTTPS 또는 로컬호스트 환경이 아님');
             if (!hasManifest) console.log('- 매니페스트 파일 없음');
             if (!hasServiceWorker) console.log('- ServiceWorker 미지원');
+        }
+
+        // 추가 PWA 검증
+        this.validatePWAComponents();
+    }
+
+    // PWA 구성 요소 검증
+    validatePWAComponents() {
+        console.log('🔍 PWA 구성 요소 상세 검증 중...');
+
+        // 매니페스트 링크 확인
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        if (manifestLink) {
+            console.log('매니페스트 링크:', manifestLink.href);
+
+            // 매니페스트 내용 가져오기
+            fetch(manifestLink.href)
+                .then(response => {
+                    console.log('매니페스트 응답 상태:', response.status);
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`매니페스트 로드 실패: ${response.status}`);
+                    }
+                })
+                .then(manifest => {
+                    console.log('매니페스트 내용:', manifest);
+                    console.log('아이콘 정보:', manifest.icons);
+
+                    // 아이콘 파일 존재 여부 확인
+                    if (manifest.icons && manifest.icons.length > 0) {
+                        const iconSrc = manifest.icons[0].src;
+                        console.log('아이콘 경로:', iconSrc);
+
+                        fetch(iconSrc, { method: 'HEAD' })
+                            .then(iconResponse => {
+                                console.log('아이콘 파일 상태:', iconResponse.status);
+                                if (iconResponse.ok) {
+                                    console.log('✅ 아이콘 파일 정상');
+                                } else {
+                                    console.log('❌ 아이콘 파일 문제:', iconResponse.status);
+                                }
+                            })
+                            .catch(iconError => {
+                                console.log('❌ 아이콘 파일 확인 실패:', iconError);
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.log('❌ 매니페스트 파싱 실패:', error);
+                });
+        }
+
+        // ServiceWorker 상태 확인
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations()
+                .then(registrations => {
+                    console.log('등록된 ServiceWorker:', registrations.length);
+                    registrations.forEach((registration, index) => {
+                        console.log(`ServiceWorker ${index}:`, registration.active ? '활성' : '비활성');
+                    });
+                })
+                .catch(error => {
+                    console.log('ServiceWorker 상태 확인 실패:', error);
+                });
         }
     }
 
