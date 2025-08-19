@@ -226,7 +226,7 @@ function addCSSAnimations() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         // ServiceWorker 등록 (외부 파일 사용)
-        const swPath = './sw.js';
+        const swPath = '/pwatest/sw.js';
 
         navigator.serviceWorker.register(swPath)
             .then(registration => {

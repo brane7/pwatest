@@ -1,9 +1,10 @@
-const CACHE_NAME = 'click-game-v1';
+const CACHE_NAME = 'click-game-v2';
 const urlsToCache = [
     '/pwatest/',
     '/pwatest/index.html',
     '/pwatest/main.js',
     '/pwatest/button.png',
+    '/pwatest/icon.png',
     '/pwatest/manifest.json'
 ];
 
