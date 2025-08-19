@@ -275,6 +275,7 @@ class PWAInstaller {
                 display: none;
                 position: relative;
                 z-index: 1000;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             `;
 
             this.installButton.addEventListener('mouseenter', () => {
@@ -287,10 +288,9 @@ class PWAInstaller {
 
             gameContainer.appendChild(this.installButton);
             console.log('설치 버튼이 DOM에 추가됨:', this.installButton);
-            console.log('설치 버튼 부모 요소:', this.installButton.parentElement);
 
-            // HTTPS 환경에서는 테스트 버튼 불필요
-            if (window.location.protocol !== 'https:') {
+            // 개발 환경에서는 테스트 버튼 표시
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                 const testButton = document.createElement('button');
                 testButton.textContent = '🧪 설치 버튼 테스트';
                 testButton.style.cssText = `
@@ -345,18 +345,24 @@ class PWAInstaller {
             console.error('설치 버튼이 생성되지 않았습니다!');
         }
 
-        // HTTPS 환경에서는 즉시 설치 버튼 표시
+        // PWA 설치 가능 여부 확인
         this.checkPWAInstallability();
 
         // 페이지 로드 후 상태 확인
         setTimeout(() => {
-            console.log('=== PWA 상태 확인 ===');
-            console.log('설치 버튼 존재:', !!this.installButton);
-            console.log('deferredPrompt 상태:', !!this.deferredPrompt);
-            console.log('ServiceWorker 지원:', 'serviceWorker' in navigator);
-            console.log('현재 URL:', window.location.href);
-            console.log('HTTPS 여부:', window.location.protocol === 'https:');
+            this.logPWAStatus();
         }, 2000);
+    }
+
+    // PWA 상태 로깅
+    logPWAStatus() {
+        console.log('=== PWA 상태 확인 ===');
+        console.log('설치 버튼 존재:', !!this.installButton);
+        console.log('deferredPrompt 상태:', !!this.deferredPrompt);
+        console.log('ServiceWorker 지원:', 'serviceWorker' in navigator);
+        console.log('현재 URL:', window.location.href);
+        console.log('HTTPS 여부:', window.location.protocol === 'https:');
+        console.log('로컬호스트 여부:', window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     }
 
     // PWA 설치 가능 여부 확인
@@ -366,61 +372,30 @@ class PWAInstaller {
         // 기본 PWA 조건 확인
         const hasManifest = !!document.querySelector('link[rel="manifest"]');
         const hasServiceWorker = 'serviceWorker' in navigator;
-        const isHTTPS = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
-        const hasIcons = this.checkManifestIcons();
+        const isHTTPS = window.location.protocol === 'https:';
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isPWAReady = isHTTPS || isLocalhost;
 
         console.log('매니페스트 존재:', hasManifest);
         console.log('ServiceWorker 지원:', hasServiceWorker);
-        console.log('HTTPS/로컬호스트:', isHTTPS);
-        console.log('아이콘 존재:', hasIcons);
+        console.log('HTTPS 환경:', isHTTPS);
+        console.log('로컬호스트 환경:', isLocalhost);
+        console.log('PWA 준비 상태:', isPWAReady);
 
-        // PWA 설치 조건이 모두 충족되면 설치 버튼 표시
-        if (isHTTPS && hasManifest && hasServiceWorker && hasIcons) {
-            console.log('🎉 PWA 설치 조건 모두 충족!');
-            setTimeout(() => {
-                this.showInstallButton();
-            }, 1000);
+        // PWA 설치 조건이 충족되면 설치 버튼 표시
+        if (isPWAReady && hasManifest && hasServiceWorker) {
+            console.log('🎉 PWA 설치 조건 충족!');
+            // beforeinstallprompt 이벤트가 발생하지 않았을 때도 버튼 표시
+            if (!this.deferredPrompt) {
+                setTimeout(() => {
+                    this.showInstallButton();
+                }, 1000);
+            }
         } else {
             console.log('❌ PWA 설치 조건 미충족:');
-            if (!isHTTPS) console.log('- HTTPS 환경이 아님');
+            if (!isPWAReady) console.log('- HTTPS 또는 로컬호스트 환경이 아님');
             if (!hasManifest) console.log('- 매니페스트 파일 없음');
             if (!hasServiceWorker) console.log('- ServiceWorker 미지원');
-            if (!hasIcons) console.log('- 아이콘 파일 없음');
-        }
-    }
-
-    // 매니페스트 아이콘 존재 여부 확인
-    checkManifestIcons() {
-        try {
-            const manifestLink = document.querySelector('link[rel="manifest"]');
-            if (!manifestLink) return false;
-
-            // 매니페스트 내용 가져오기
-            fetch(manifestLink.href)
-                .then(response => response.json())
-                .then(manifest => {
-                    if (manifest.icons && manifest.icons.length > 0) {
-                        const iconSrc = manifest.icons[0].src;
-                        console.log('매니페스트 아이콘 경로:', iconSrc);
-
-                        // 아이콘 파일 존재 여부 확인
-                        fetch(iconSrc, { method: 'HEAD' })
-                            .then(response => {
-                                console.log('아이콘 파일 존재:', response.ok);
-                            })
-                            .catch(error => {
-                                console.log('아이콘 파일 확인 실패:', error);
-                            });
-                    }
-                })
-                .catch(error => {
-                    console.log('매니페스트 파싱 실패:', error);
-                });
-
-            return true;
-        } catch (error) {
-            console.log('아이콘 확인 중 오류:', error);
-            return false;
         }
     }
 
@@ -463,8 +438,14 @@ class PWAInstaller {
                 return;
             }
 
+            // 로컬호스트 환경에서는 수동 설치 안내
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                this.showLocalhostInstallGuide();
+                return;
+            }
+
             console.log('PWA 설치 조건을 확인해주세요:');
-            console.log('1. HTTPS 환경인지 확인');
+            console.log('1. HTTPS 환경 또는 로컬호스트인지 확인');
             console.log('2. manifest.json이 올바른지 확인');
             console.log('3. ServiceWorker가 등록되었는지 확인');
             return;
@@ -490,6 +471,23 @@ class PWAInstaller {
         } catch (error) {
             console.error('앱 설치 중 오류 발생:', error);
         }
+    }
+
+    // 로컬호스트 환경에서 PWA 설치 안내
+    showLocalhostInstallGuide() {
+        const guide = `
+            🧪 로컬호스트 환경에서 PWA 테스트하기:
+            
+            1. Chrome 브라우저에서 F12 개발자 도구 열기
+            2. Application 탭으로 이동
+            3. Manifest 섹션에서 "Add to home screen" 클릭
+            4. 또는 주소창에 "chrome://flags/#bypass-app-banner-engagement-checks" 입력
+            5. "Bypass app banner engagement checks" 찾아서 "Enabled"로 설정
+            6. 브라우저 재시작 후 페이지 새로고침
+        `;
+
+        console.log(guide);
+        this.showInstallGuideOnScreen('로컬호스트', guide);
     }
 
     // HTTPS 환경에서 PWA 설치 안내
