@@ -367,17 +367,60 @@ class PWAInstaller {
         const hasManifest = !!document.querySelector('link[rel="manifest"]');
         const hasServiceWorker = 'serviceWorker' in navigator;
         const isHTTPS = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+        const hasIcons = this.checkManifestIcons();
 
         console.log('매니페스트 존재:', hasManifest);
         console.log('ServiceWorker 지원:', hasServiceWorker);
         console.log('HTTPS/로컬호스트:', isHTTPS);
+        console.log('아이콘 존재:', hasIcons);
 
-        // HTTPS 환경에서는 즉시 설치 버튼 표시
-        if (isHTTPS) {
-            console.log('HTTPS 환경 - PWA 설치 조건 충족!');
+        // PWA 설치 조건이 모두 충족되면 설치 버튼 표시
+        if (isHTTPS && hasManifest && hasServiceWorker && hasIcons) {
+            console.log('🎉 PWA 설치 조건 모두 충족!');
             setTimeout(() => {
                 this.showInstallButton();
             }, 1000);
+        } else {
+            console.log('❌ PWA 설치 조건 미충족:');
+            if (!isHTTPS) console.log('- HTTPS 환경이 아님');
+            if (!hasManifest) console.log('- 매니페스트 파일 없음');
+            if (!hasServiceWorker) console.log('- ServiceWorker 미지원');
+            if (!hasIcons) console.log('- 아이콘 파일 없음');
+        }
+    }
+
+    // 매니페스트 아이콘 존재 여부 확인
+    checkManifestIcons() {
+        try {
+            const manifestLink = document.querySelector('link[rel="manifest"]');
+            if (!manifestLink) return false;
+
+            // 매니페스트 내용 가져오기
+            fetch(manifestLink.href)
+                .then(response => response.json())
+                .then(manifest => {
+                    if (manifest.icons && manifest.icons.length > 0) {
+                        const iconSrc = manifest.icons[0].src;
+                        console.log('매니페스트 아이콘 경로:', iconSrc);
+
+                        // 아이콘 파일 존재 여부 확인
+                        fetch(iconSrc, { method: 'HEAD' })
+                            .then(response => {
+                                console.log('아이콘 파일 존재:', response.ok);
+                            })
+                            .catch(error => {
+                                console.log('아이콘 파일 확인 실패:', error);
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.log('매니페스트 파싱 실패:', error);
+                });
+
+            return true;
+        } catch (error) {
+            console.log('아이콘 확인 중 오류:', error);
+            return false;
         }
     }
 
