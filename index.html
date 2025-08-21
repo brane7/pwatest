@@ -110,6 +110,60 @@
             animation: fadeIn 0.5s ease-in;
         }
 
+        /* 이미지 테스트 섹션 스타일 */
+        .image-test-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 15px;
+            border: 2px dashed #3498db;
+        }
+
+        .image-test-section h3 {
+            margin: 0 0 15px 0;
+            color: #3498db;
+            font-size: 18px;
+        }
+
+        .test-image-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .test-image-button:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .image-display {
+            min-height: 100px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background: white;
+            text-align: center;
+        }
+
+        .image-display img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-display p {
+            margin: 0;
+            color: #666;
+            font-style: italic;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -127,7 +181,7 @@
 <body>
     <!-- 버전 정보 표시 -->
     <div class="version-info">
-        v3.0.0 - 모듈화 완료
+        v3.1.0 - 이미지 테스트 기능 추가
     </div>
 
     <div class="game-container">
@@ -139,6 +193,15 @@
             <p>초당 클릭: <span id="clicksPerSecond">0</span></p>
         </div>
         <button class="reset-button" id="resetButton">리셋</button>
+
+        <!-- 이미지 테스트 섹션 -->
+        <div class="image-test-section">
+            <h3>🖼️ 이미지 테스트</h3>
+            <button class="test-image-button" id="testImageButton">이미지 로드 테스트</button>
+            <div class="image-display" id="imageDisplay">
+                <p>이미지가 여기에 표시됩니다</p>
+            </div>
+        </div>
     </div>
 
     <script src="./game.js"></script>

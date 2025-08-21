@@ -1,8 +1,9 @@
 const CACHE_NAME = 'click-game-v3';
 const urlsToCache = [
-    '/pwatest/',
     '/pwatest/index.html',
     '/pwatest/main.js',
+    '/pwatest/game.js',
+    '/pwatest/pwa-installer.js',
     '/pwatest/button.png',
     '/pwatest/icon.png',
     '/pwatest/manifest.json',

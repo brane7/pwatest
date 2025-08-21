@@ -45,6 +45,12 @@ class ClickGame {
                 this.onClick();
             }
         });
+
+        // 이미지 테스트 버튼 이벤트
+        const testImageButton = document.getElementById('testImageButton');
+        if (testImageButton) {
+            testImageButton.addEventListener('click', () => this.testImageLoading());
+        }
     }
 
     /**
@@ -191,6 +197,117 @@ class ClickGame {
         setInterval(() => {
             this.updateUI();
         }, 100);
+    }
+
+    /**
+     * 이미지 로드 테스트
+     * 순차적으로 load_image1.png ~ load_image7.png 로드
+     */
+    testImageLoading() {
+        const imageDisplay = document.getElementById('imageDisplay');
+        const testButton = document.getElementById('testImageButton');
+
+        if (!imageDisplay || !testButton) return;
+
+        // 현재 이미지 인덱스 계산 (1부터 7까지)
+        const currentIndex = this.getCurrentImageIndex();
+        const nextIndex = currentIndex >= 7 ? 1 : currentIndex + 1;
+
+        // 이미지 로드
+        this.loadImage(nextIndex, imageDisplay, testButton);
+    }
+
+    /**
+     * 현재 표시된 이미지 인덱스 확인
+     */
+    getCurrentImageIndex() {
+        const imageDisplay = document.getElementById('imageDisplay');
+        if (!imageDisplay) return 0;
+
+        const currentImg = imageDisplay.querySelector('img');
+        if (!currentImg) return 0;
+
+        // 이미지 src에서 인덱스 추출
+        const src = currentImg.src;
+        const match = src.match(/load_image(\d+)\.png/);
+        return match ? parseInt(match[1]) : 0;
+    }
+
+    /**
+     * 특정 인덱스의 이미지 로드
+     */
+    loadImage(imageIndex, imageDisplay, testButton) {
+        const imagePath = `/pwatest/load_image${imageIndex}.png`;
+
+        console.log(`🖼️ 이미지 로드 시도: ${imagePath}`);
+
+        // 기존 이미지 제거
+        imageDisplay.innerHTML = '';
+
+        // 로딩 표시
+        const loadingText = document.createElement('p');
+        loadingText.textContent = `이미지 ${imageIndex} 로딩 중...`;
+        loadingText.style.color = '#3498db';
+        imageDisplay.appendChild(loadingText);
+
+        // 이미지 생성 및 로드
+        const img = new Image();
+        img.onload = () => {
+            console.log(`✅ 이미지 ${imageIndex} 로드 성공!`);
+
+            // 로딩 텍스트 제거하고 이미지 표시
+            imageDisplay.innerHTML = '';
+            imageDisplay.appendChild(img);
+
+            // 버튼 텍스트 업데이트
+            testButton.textContent = `다음 이미지 (${imageIndex + 1 > 7 ? 1 : imageIndex + 1})`;
+
+            // 성공 애니메이션
+            img.style.animation = 'fadeIn 0.5s ease-in';
+        };
+
+        img.onerror = () => {
+            console.error(`❌ 이미지 ${imageIndex} 로드 실패: ${imagePath}`);
+
+            // 에러 메시지 표시
+            imageDisplay.innerHTML = `
+                <p style="color: #e74c3c; font-weight: bold;">
+                    ❌ 이미지 로드 실패: load_image${imageIndex}.png
+                </p>
+                <p style="color: #666; font-size: 12px;">
+                    파일이 존재하지 않거나 경로가 잘못되었습니다.
+                </p>
+            `;
+
+            // 버튼 텍스트 원래대로
+            testButton.textContent = '이미지 로드 테스트';
+        };
+
+        // 이미지 로드 시작
+        img.src = imagePath;
+
+        // ServiceWorker 캐시 확인
+        this.checkImageCache(imagePath);
+    }
+
+    /**
+     * 이미지 캐시 상태 확인
+     */
+    async checkImageCache(imagePath) {
+        if ('caches' in window) {
+            try {
+                const cache = await caches.open('click-game-v3');
+                const response = await cache.match(imagePath);
+
+                if (response) {
+                    console.log(`💾 이미지가 캐시에 저장되어 있습니다: ${imagePath}`);
+                } else {
+                    console.log(`⚠️ 이미지가 캐시에 없습니다: ${imagePath}`);
+                }
+            } catch (error) {
+                console.warn('캐시 확인 중 오류:', error);
+            }
+        }
     }
 }
 
