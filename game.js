@@ -49,6 +49,7 @@ class ClickGame {
         // 이미지 테스트 버튼 이벤트
         const testImageButton = document.getElementById('testImageButton');
         if (testImageButton) {
+            console.log('testImageButton', testImageButton);
             testImageButton.addEventListener('click', () => this.testImageLoading());
         }
     }
@@ -207,6 +208,9 @@ class ClickGame {
         const imageDisplay = document.getElementById('imageDisplay');
         const testButton = document.getElementById('testImageButton');
 
+        console.log('imageDisplay', imageDisplay);
+        console.log('testButton', testButton);
+
         if (!imageDisplay || !testButton) return;
 
         // 현재 이미지 인덱스 계산 (1부터 7까지)
@@ -237,7 +241,7 @@ class ClickGame {
      * 특정 인덱스의 이미지 로드
      */
     loadImage(imageIndex, imageDisplay, testButton) {
-        const imagePath = `./load_image${imageIndex}.png`;
+        const imagePath = `/pwatest/load_image${imageIndex}.png`;
 
         console.log(`🖼️ 이미지 로드 시도: ${imagePath}`);
 
