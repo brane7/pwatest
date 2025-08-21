@@ -1,11 +1,18 @@
-const CACHE_NAME = 'click-game-v2';
+const CACHE_NAME = 'click-game-v3';
 const urlsToCache = [
     '/pwatest/',
     '/pwatest/index.html',
     '/pwatest/main.js',
     '/pwatest/button.png',
     '/pwatest/icon.png',
-    '/pwatest/manifest.json'
+    '/pwatest/manifest.json',
+    '/pwatest/load_image1.png',
+    '/pwatest/load_image2.png',
+    '/pwatest/load_image3.png',
+    '/pwatest/load_image4.png',
+    '/pwatest/load_image5.png',
+    '/pwatest/load_image6.png',
+    '/pwatest/load_image7.png',
 ];
 
 // ServiceWorker 설치 시 캐시에 파일들을 저장
