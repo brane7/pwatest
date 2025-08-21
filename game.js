@@ -241,7 +241,7 @@ class ClickGame {
      * 특정 인덱스의 이미지 로드
      */
     loadImage(imageIndex, imageDisplay, testButton) {
-        const imagePath = `/pwatest/load_image${imageIndex}.png`;
+        const imagePath = `./load_image${imageIndex}.png`;
 
         console.log(`🖼️ 이미지 로드 시도: ${imagePath}`);
 
